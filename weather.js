@@ -20,6 +20,18 @@
 
 // getWeather("Chennai");
 // weather.jsconst express = require("express");
+
+require("dotenv").config();
+const express = require("express");
+const axios = require("axios");
+const app = express();
+
+
+
+
+
+
+
 const axios = require("axios");
 const app = express();
 
@@ -50,6 +62,7 @@ app.get("/weather/:city", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🌤 Server running on port ${PORT}`));
+
 
 
 
