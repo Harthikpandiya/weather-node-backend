@@ -20,47 +20,55 @@
 
 // getWeather("Chennai");
 // weather.jsconst express = require("express");
+import express from "express";
+import fetch from "node-fetch";
+import dotenv from "dotenv";
 
-require("dotenv").config();
-const express = require("express");
-const axios = require("axios");
+dotenv.config();
+
 const app = express();
+const PORT = process.env.PORT || 10000;
 
+// ✅ Root route (to avoid Cannot GET /)
+app.get("/", (req, res) => {
+  res.send("🌤 Weather API backend is running successfully!");
+});
 
-
-
-
-
-
-
-
-// use env var for API key (set this on Render later)
-const apiKey = process.env.OPENWEATHER_API_KEY;
-
-app.get("/weather/:city", async (req, res) => {
-  const { city } = req.params;
+// ✅ Weather route
+app.get("/weather", async (req, res) => {
   try {
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
-    const response = await axios.get(url);
-    const data = response.data;
+    const city = req.query.city;
+    if (!city) {
+      return res.status(400).json({ error: "City name is required" });
+    }
+
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    // If OpenWeather API gives an error
+    if (data.cod !== 200) {
+      return res.status(404).json({ error: data.message });
+    }
 
     res.json({
       city: data.name,
-      country: data.sys.country,
-      temperature: `${data.main.temp}°C`,
-      condition: data.weather[0].description,
-      windSpeed: `${data.wind.speed} m/s`,
+      temperature: data.main.temp,
+      humidity: data.main.humidity,
+      description: data.weather[0].description,
     });
-  } catch (error) {
-    res.status(404).json({
-      error: "❌ City not found or invalid API key",
-      details: error.response ? error.response.data : error.message,
-    });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🌤 Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🌤 Server running on port ${PORT}`);
+});
+
+
 
 
 
