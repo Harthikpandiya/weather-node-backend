@@ -19,23 +19,20 @@
 // }
 
 // getWeather("Chennai");
-// weather.js
-const express = require("express");
+// weather.jsconst express = require("express");
 const axios = require("axios");
 const app = express();
 
-// ✅ Your OpenWeather API key
-const apiKey = "26d0feef47bf72fcaf3b531867a25ec5";
+// use env var for API key (set this on Render later)
+const apiKey = process.env.OPENWEATHER_API_KEY;
 
-// ✅ Route: /weather/:city
 app.get("/weather/:city", async (req, res) => {
   const { city } = req.params;
   try {
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
     const response = await axios.get(url);
     const data = response.data;
 
-    // ✅ JSON output
     res.json({
       city: data.name,
       country: data.sys.country,
@@ -46,12 +43,14 @@ app.get("/weather/:city", async (req, res) => {
   } catch (error) {
     res.status(404).json({
       error: "❌ City not found or invalid API key",
+      details: error.response ? error.response.data : error.message,
     });
   }
 });
 
-// ✅ Render will use this port
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🌤 Server running on port ${PORT}`));
+
+
 
 
